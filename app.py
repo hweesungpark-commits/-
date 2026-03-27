@@ -17,7 +17,7 @@ def format_korean_unit(number):
     return result.strip()
 
 # --- [2. 웹 UI 구성] ---
-st.title("🏹 바람의나라 분노 대미지 시뮬레이터")
+st.title("🏹 바람의나라 용무기10류 분노 대미지 시뮬레이터")
 st.markdown("---")
 
 # 입력 항목 레이아웃 (2열 구성)
