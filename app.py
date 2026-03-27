@@ -3,24 +3,31 @@ import streamlit as st
 # --- [1. 설정 및 단위 변환 로직] ---
 st.set_page_config(page_title="바람의나라 분노 계산기", layout="centered")
 
-def format_korean_unit(number):
+def format_korean_unit_refined(number):
+    """숫자를 '억 만 천' 단위로 변환하고 백의 자리 이하는 절삭"""
     num = int(number)
-    if num < 10000: return f"{num}"
+    if num < 1000:
+        return "0 (1,000 미만)"
+    
     eok = num // 100000000
     man = (num % 100000000) // 10000
-    rem = num % 10000
+    cheon = (num % 10000) // 1000 # 천 단위 추출
     
     result = ""
-    if eok > 0: result += f"{eok}억 "
-    if man > 0: result += f"{man}만 "
-    if rem > 0 or result == "": result += f"{rem}"
-    return result.strip()
+    if eok > 0:
+        result += f"{eok}억 "
+    if man > 0:
+        result += f"{man}만 "
+    if cheon > 0:
+        result += f"{cheon}천"
+        
+    return result.strip() if result != "" else "0"
 
 # --- [2. 웹 UI 구성] ---
-st.title("🏹 바람의나라 용무기10류 분노 대미지 시뮬레이터")
+st.title("🏹 바람의나라 분노 대미지 시뮬레이터")
 st.markdown("---")
 
-# 입력 항목 레이아웃 (2열 구성)
+# 입력 항목 레이아웃 (사용자 요청 순서 반영)
 col1, col2 = st.columns(2)
 
 with col1:
@@ -33,12 +40,11 @@ with col2:
     mp = st.number_input("2. 현재 마력(MP)", min_value=0, value=1000000, step=10000)
     my_atk = st.number_input("4. 내 대인공격 (%)", min_value=0.0, value=0.0, step=0.1) / 100
     opp_res = st.number_input("6. 상대 직타저항 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    is_phoenix = st.checkbox("8. 불멸주작 시동 여부", value=False)
+    is_phoenix = st.checkbox("8. 불멸주작 보유 여부", value=False)
 
 st.markdown("---")
 
 # --- [3. 계산 로직] ---
-# 기본 위력 및 상수
 base_power = (hp + (mp * 2)) / 3.267974
 res_factor = 1 - opp_res + my_ignore
 attack_factor = 1 + my_atk
@@ -53,15 +59,18 @@ if is_phoenix:
     final_damage *= crit_factor_b
 
 # --- [4. 결과 출력] ---
-readable_dmg = format_korean_unit(final_damage)
+readable_dmg = format_korean_unit_refined(final_damage)
 
 st.subheader("🔥 최종 계산 대미지")
-st.error(f"### {readable_dmg}") # 강조를 위해 빨간색 박스 형태로 출력
+st.error(f"### {readable_dmg}") 
 
-st.info(f"""
-**계산 상세 정보:**
-- 기본 위력 계수: {base_power:,.2f}
-- 직타/대인 효율: {res_factor * attack_factor * defense_factor:,.4f}
-- 마치피해 증폭(A): {crit_factor_a:,.4f}
-- 불멸주작 증폭(B): {1 + (0.6 * crit_factor_a) if is_phoenix else 1.0:,.4f}
-""")
+# 제작자 정보 추가
+st.caption("제작자: 빅딕@연  |  최종수정날짜: 2026.03.27")
+
+with st.expander("계산 상세 정보 확인"):
+    st.write(f"- **기본 위력 계수**: {base_power:,.2f}")
+    st.write(f"- **직타/대인 효율**: {res_factor * attack_factor * defense_factor:,.4f}")
+    st.write(f"- **마치피해 증폭(A)**: {crit_factor_a:,.4f}")
+    if is_phoenix:
+        st.write(f"- **불멸주작 증폭(B)**: {1 + (0.6 * crit_factor_a):,.4f}")
+    st.info("※ 백 단위 이하는 계산기 정책에 따라 절삭 표기됩니다.")
