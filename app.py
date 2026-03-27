@@ -34,12 +34,12 @@ with col1:
     hp = st.number_input("1. 나의 최대 체력(HP)", min_value=0, value=1000000, step=10000)
     my_ignore = st.number_input("3. 나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1) / 100
     my_crit_rate = st.number_input("5. 나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    opp_def = st.number_input("7. 상대 대인방어 (%)", min_value=0.0, value=0.0, step=0.1) / 100
+    opp_def = st.number_input("7. 상대방 대인방어 (%)", min_value=0.0, value=0.0, step=0.1) / 100
 
 with col2:
     mp = st.number_input("2. 나의 최대 마력(MP)", min_value=0, value=1000000, step=10000)
     my_atk = st.number_input("4. 나의 대인공격 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    opp_res = st.number_input("6. 상대 직타저항 (%)", min_value=0.0, value=0.0, step=0.1) / 100
+    opp_res = st.number_input("6. 상대방 직타저항 (%)", min_value=0.0, value=0.0, step=0.1) / 100
     is_phoenix = st.checkbox("8. 불멸주작 시동 여부", value=False)
 
 st.markdown("---")
