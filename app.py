@@ -29,24 +29,25 @@ col_my, col_opp = st.columns(2, gap="large")
 
 with col_my:
     st.subheader("👤 나의 스펙")
-    hp = st.number_input("1. 나의 최대 체력(HP)", min_value=0, value=1000000, step=10000, key="hp_input")
-    mp = st.number_input("2. 나의 최대 마력(MP)", min_value=0, value=1000000, step=10000, key="mp_input")
-    my_ignore = st.number_input("3. 나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1, key="ignore_input") / 100
-    my_atk = st.number_input("4. 나의 대인공격 (%)", min_value=0.0, value=0.0, step=0.1, key="atk_input") / 100
+    hp = st.number_input("나의 최대 체력(HP)", min_value=0, value=1000000, step=10000, key="hp_input")
+    mp = st.number_input("나의 최대 마력(MP)", min_value=0, value=1000000, step=10000, key="mp_input")
+    my_ignore = st.number_input("나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1, key="ignore_input") / 100
+    my_atk = st.number_input("나의 대인공격 (%)", min_value=0.0, value=0.0, step=0.1, key="atk_input") / 100
     
-    # [요청사항 반영] 5번과 8번을 가로로 나란히 배치하기 위해 내부 컬럼 생성
-    inner_col1, inner_col2 = st.columns([2, 1]) # 2:1 비율로 분할
-    with inner_col1:
-        my_crit_rate = st.number_input("5. 나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1, key="crit_input") / 100
-    with inner_col2:
-        # 입력창과 높이를 맞추기 위해 상단 여백 추가
-        st.write("##") 
-        is_phoenix = st.checkbox("8. 불멸주작", value=False, key="phoenix_check")
+    # [요청사항] 마치피해 칸 크기 조절 및 불멸주작 나란히 배치
+    # 비율을 3:1 혹은 4:1 정도로 주어 입력칸의 가독성을 확보합니다.
+    m_col1, m_col2 = st.columns([3, 1]) 
+    with m_col1:
+        my_crit_rate = st.number_input("나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1, key="crit_input") / 100
+    with m_col2:
+        st.write("##") # 높이 맞춤용
+        is_phoenix = st.checkbox("불멸주작", value=False, key="phoenix_check")
 
 with col_opp:
     st.subheader("🎯 상대방 스펙")
-    opp_def = st.number_input("7. 상대방 대인방어 (%)", min_value=0.0, value=0.0, step=0.1, key="def_input") / 100
-    opp_res = st.number_input("6. 상대방 직타저항 (%)", min_value=0.0, value=0.0, step=0.1, key="res_input") / 100
+    # [요청사항] 직타저항과 대인방어 순서 교체
+    opp_res = st.number_input("상대방 직타저항 (%)", min_value=0.0, value=0.0, step=0.1, key="res_input") / 100
+    opp_def = st.number_input("상대방 대인방어 (%)", min_value=0.0, value=0.0, step=0.1, key="def_input") / 100
 
 st.markdown("---") 
 
