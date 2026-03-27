@@ -99,7 +99,7 @@ if is_phoenix:
     t_bonus = format_korean_unit_refined(bonus_damage)
     t_final = format_korean_unit_refined(final_damage)
     
-    st.write(f"**[기본]** {t_pure} + **[주작추가]** {t_bonus}")
+    st.write(f"**[기본 대미지]** {t_pure} + **[주작시동 추가 대미지]** {t_bonus}")
     st.error(f"### = {t_final}")
 else:
     # 일반 상태
