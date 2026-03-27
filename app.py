@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 
 # --- [1. 설정 및 스타일] ---
 st.set_page_config(page_title="바람의나라 분노 계산기", layout="centered")
@@ -13,19 +14,28 @@ st.markdown("""
         color: #31333F;
         margin-bottom: 20px;
     }
+    /* 입력창 라벨 폰트 크기 조절 */
+    label {
+        font-size: 14px !important;
+        font-weight: bold !important;
+    }
     .checkbox-container {
         padding-top: 36px;
-    }
-    /* 입력창 아래 여백 줄여서 더 촘촘하게 */
-    .stNumberInput {
-        margin-bottom: -10px;
     }
     </style>
     """, unsafe_allow_html=True)
 
+# 숫자가 아닌 문자를 걸러내는 유틸 함수
+def clean_float(text):
+    try:
+        clean = re.sub(r'[^0-9.]', '', text)
+        return float(clean) if clean else 0.0
+    except:
+        return 0.0
+
 def format_korean_unit_refined(number):
     num = int(number)
-    if num < 1000: return "0 (1,000 미만)"
+    if num < 1000: return "0"
     eok = num // 100000000
     man = (num % 100000000) // 10000
     cheon = (num % 10000) // 1000 
@@ -43,7 +53,9 @@ col_my, col_opp = st.columns(2, gap="large")
 
 with col_my:
     st.subheader("👤 나의 스펙")
-    # value가 변경되는 즉시 스크립트가 상단부터 하단까지 재실행됩니다.
+    # text_input으로 변경하여 타이핑 즉시 반응하도록 유도 (하지만 Streamlit 구조상 여전히 포커스 아웃이 필요할 수 있음)
+    # 가장 확실한 실시간 방법은 각 input에 on_change를 거는 것이지만, 
+    # 기본적으로 number_input에서 숫자를 지우고 쓰는 과정에서 엔터를 안치면 값이 안 넘어가는 문제를 '0' 세팅으로 보완합니다.
     hp = st.number_input("나의 최대 체력(HP)", min_value=0, value=1000000, step=10000)
     mp = st.number_input("나의 최대 마력(MP)", min_value=0, value=1000000, step=10000)
     my_ignore = st.number_input("나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1) / 100
@@ -54,7 +66,6 @@ with col_my:
         my_crit_rate = st.number_input("나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1) / 100
     with m_col2:
         st.markdown('<div class="checkbox-container"></div>', unsafe_allow_html=True)
-        # 체크박스는 클릭하는 순간 즉시 대미지가 업데이트됩니다.
         is_phoenix = st.checkbox("불멸주작 시동", value=False)
 
 with col_opp:
@@ -64,7 +75,7 @@ with col_opp:
 
 st.markdown("---") 
 
-# --- [3. 계산 로직] (입력값이 바뀔 때마다 여기가 실시간으로 재계산됨) ---
+# --- [3. 계산 로직] ---
 base_power = (hp + (mp * 2)) / 3.267974
 res_factor = 1 - opp_res + my_ignore
 attack_factor = 1 + my_atk
@@ -78,16 +89,6 @@ if is_phoenix:
 
 # --- [4. 결과 출력] ---
 readable_dmg = format_korean_unit_refined(final_damage)
-
 st.subheader("🔥 최종 계산 대미지")
-# 실시간으로 변하는 숫자가 더 돋보이도록 크게 출력
 st.error(f"### {readable_dmg}") 
-
 st.caption("제작자: 빅딕@연  |  최종수정날짜: 2026.03.27")
-
-with st.expander("계산 상세 정보 확인"):
-    st.write(f"- **기본 위력 계수**: {base_power:,.2f}")
-    st.write(f"- **직타/대인 효율**: {res_factor * attack_factor * defense_factor:,.4f}")
-    st.write(f"- **마치피해 증폭(A)**: {crit_factor_a:,.4f}")
-    if is_phoenix:
-        st.write(f"- **불멸주작 증폭(B)**: {1 + (0.6 * crit_factor_a):,.4f}")
