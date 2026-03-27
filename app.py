@@ -33,7 +33,7 @@ with col2:
     mp = st.number_input("2. 현재 마력(MP)", min_value=0, value=1000000, step=10000)
     my_atk = st.number_input("4. 내 대인공격 (%)", min_value=0.0, value=0.0, step=0.1) / 100
     opp_res = st.number_input("6. 상대 직타저항 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    is_phoenix = st.checkbox("8. 불멸주작 보유 여부", value=False)
+    is_phoenix = st.checkbox("8. 불멸주작 시동 여부", value=False)
 
 st.markdown("---")
 
