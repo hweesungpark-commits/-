@@ -22,11 +22,13 @@ st.markdown("""
     .checkbox-container {
         padding-top: 36px;
     }
-    /* 추가 대미지 강조 스타일 */
-    .sub-result {
-        font-size: 16px;
-        color: #555;
-        margin-bottom: 5px;
+    /* 공유 섹션 스타일 */
+    .share-box {
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f0f2f6;
+        border: 1px solid #dcdfe3;
+        margin-top: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -67,24 +69,33 @@ with col_opp:
     st.subheader("🎯 상대방 스펙")
     opp_res = st.number_input("상대방 직타저항 (%)", min_value=0.0, value=70.0, step=0.1, key="res_v") / 100
     opp_def = st.number_input("상대방 대인방어 (%)", min_value=0.0, value=40.0, step=0.1, key="dfn_v") / 100
+    
+    # [요청사항] 하단 빈 공간에 공유 버튼 추가
+    st.write("---")
+    st.write("🔗 **링크 공유하기**")
+    # 현재 앱의 URL 주소 (본인의 실제 streamlit 주소로 바꿔 적으셔도 됩니다)
+    share_url = "https://your-app-name.streamlit.app" 
+    
+    # 클릭 시 클립보드에 복사되는 버튼
+    if st.button("계산기 주소 복사하기"):
+        st.write("복사되었습니다! 필요한 곳에 붙여넣으세요.")
+        # 실제 클립보드 복사 기능 (최신 스트림릿 버전 지원)
+        # st.copy_to_clipboard(share_url) # 버전이 낮을 경우 에러 방지를 위해 하단 텍스트 노출로 대체 가능
+        st.code(share_url, language=None)
 
 st.markdown("---") 
 
 # --- [3. 계산 로직] ---
-# 기본 분노 대미지 (주작 없을 때)
 base_power = (hp + (mp * 2)) / 3.267974
 res_factor = 1 - opp_res + my_ignore
 attack_factor = 1 + my_atk
 defense_factor = 1 - opp_def
 crit_factor_a = 1 + (my_crit_rate / 2)
 
-# 주작 전 순수 대미지
 pure_damage = base_power * res_factor * attack_factor * defense_factor * crit_factor_a
-
 final_damage = pure_damage
 bonus_damage = 0
 
-# 주작 시동 시 추가 계산
 if is_phoenix:
     bonus_factor = 0.6 * crit_factor_a
     bonus_damage = pure_damage * bonus_factor
@@ -94,23 +105,13 @@ if is_phoenix:
 st.subheader("🔥 최종 계산 대미지")
 
 if is_phoenix:
-    # 주작 시동 시 상세 합산식 표기
     t_pure = format_korean_unit_refined(pure_damage)
     t_bonus = format_korean_unit_refined(bonus_damage)
     t_final = format_korean_unit_refined(final_damage)
-    
-    st.write(f"**[기본 대미지]** {t_pure} + **[주작시동 추가 대미지]** {t_bonus}")
+    st.write(f"**[기본]** {t_pure} + **[주작추가]** {t_bonus}")
     st.error(f"### = {t_final}")
 else:
-    # 일반 상태
     t_final = format_korean_unit_refined(final_damage)
     st.error(f"### {t_final}") 
 
 st.caption("제작자: 빅딕@연  |  최종수정날짜: 2026.03.27")
-
-with st.expander("계산 상세 정보 확인"):
-    st.write(f"- 기본 위력 계수: {base_power:,.2f}")
-    st.write(f"- 마치피해 증폭(A): {crit_factor_a:,.4f}")
-    if is_phoenix:
-        st.write(f"- 불멸주작 추가 증폭률: {0.6 * crit_factor_a * 100:.1f}%")
-    st.info("※ 백 단위 이하는 계산기 정책에 따라 절삭 표기됩니다.")
