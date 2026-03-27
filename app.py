@@ -11,38 +11,44 @@ def format_korean_unit_refined(number):
     
     eok = num // 100000000
     man = (num % 100000000) // 10000
-    cheon = (num % 10000) // 1000 # 천 단위 추출
+    cheon = (num % 10000) // 1000 
     
-    result = ""
-    if eok > 0:
-        result += f"{eok}억 "
-    if man > 0:
-        result += f"{man}만 "
-    if cheon > 0:
-        result += f"{cheon}천"
+    result = []
+    if eok > 0: result.append(f"{eok}억")
+    if man > 0: result.append(f"{man}만")
+    if cheon > 0: result.append(f"{cheon}천")
         
-    return result.strip() if result != "" else "0"
+    return " ".join(result) if result else "0"
 
 # --- [2. 웹 UI 구성] ---
 st.title("🏹 바람의나라 분노 대미지 시뮬레이터")
 st.markdown("---")
 
-# 입력 항목 레이아웃 (사용자 요청 순서 반영)
-col1, col2 = st.columns(2)
+# 상단 레이아웃 (나의 스펙 vs 상대방 스펙)
+col_my, col_opp = st.columns(2, gap="large")
 
-with col1:
-    hp = st.number_input("1. 나의 최대 체력(HP)", min_value=0, value=1000000, step=10000)
-    my_ignore = st.number_input("3. 나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    my_crit_rate = st.number_input("5. 나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    opp_def = st.number_input("7. 상대방 대인방어 (%)", min_value=0.0, value=0.0, step=0.1) / 100
+with col_my:
+    st.subheader("👤 나의 스펙")
+    hp = st.number_input("1. 나의 최대 체력(HP)", min_value=0, value=1000000, step=10000, key="hp_input")
+    mp = st.number_input("2. 나의 최대 마력(MP)", min_value=0, value=1000000, step=10000, key="mp_input")
+    my_ignore = st.number_input("3. 나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1, key="ignore_input") / 100
+    my_atk = st.number_input("4. 나의 대인공격 (%)", min_value=0.0, value=0.0, step=0.1, key="atk_input") / 100
+    
+    # [요청사항 반영] 5번과 8번을 가로로 나란히 배치하기 위해 내부 컬럼 생성
+    inner_col1, inner_col2 = st.columns([2, 1]) # 2:1 비율로 분할
+    with inner_col1:
+        my_crit_rate = st.number_input("5. 나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1, key="crit_input") / 100
+    with inner_col2:
+        # 입력창과 높이를 맞추기 위해 상단 여백 추가
+        st.write("##") 
+        is_phoenix = st.checkbox("8. 불멸주작", value=False, key="phoenix_check")
 
-with col2:
-    mp = st.number_input("2. 나의 최대 마력(MP)", min_value=0, value=1000000, step=10000)
-    my_atk = st.number_input("4. 나의 대인공격 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    opp_res = st.number_input("6. 상대방 직타저항 (%)", min_value=0.0, value=0.0, step=0.1) / 100
-    is_phoenix = st.checkbox("8. 불멸주작 시동 여부", value=False)
+with col_opp:
+    st.subheader("🎯 상대방 스펙")
+    opp_def = st.number_input("7. 상대방 대인방어 (%)", min_value=0.0, value=0.0, step=0.1, key="def_input") / 100
+    opp_res = st.number_input("6. 상대방 직타저항 (%)", min_value=0.0, value=0.0, step=0.1, key="res_input") / 100
 
-st.markdown("---")
+st.markdown("---") 
 
 # --- [3. 계산 로직] ---
 base_power = (hp + (mp * 2)) / 3.267974
@@ -64,7 +70,6 @@ readable_dmg = format_korean_unit_refined(final_damage)
 st.subheader("🔥 최종 계산 대미지")
 st.error(f"### {readable_dmg}") 
 
-# 제작자 정보 추가
 st.caption("제작자: 빅딕@연  |  최종수정날짜: 2026.03.27")
 
 with st.expander("계산 상세 정보 확인"):
