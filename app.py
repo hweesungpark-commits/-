@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 
 # --- [1. 설정 및 스타일] ---
 st.set_page_config(page_title="바람의나라 분노 계산기", layout="centered")
@@ -16,16 +17,19 @@ st.markdown("""
     .checkbox-container {
         padding-top: 36px;
     }
-    /* "Press Enter to apply" 안내 문구를 강제로 숨기는 매직 CSS */
-    div[data-testid="stNotification"] {
-        display: none;
-    }
-    /* 입력창 여백 최적화 */
-    .stNumberInput {
-        margin-bottom: -10px;
-    }
+    /* 입력창 라벨 폰트 */
+    label { font-size: 14px !important; font-weight: bold !important; }
     </style>
     """, unsafe_allow_html=True)
+
+# 실시간 텍스트를 숫자로 안전하게 변환하는 함수
+def get_num(val):
+    try:
+        # 숫자와 소수점만 남기고 제거
+        clean = re.sub(r'[^0-9.]', '', str(val))
+        return float(clean) if clean else 0.0
+    except:
+        return 0.0
 
 def format_korean_unit_refined(number):
     num = int(number)
@@ -45,27 +49,34 @@ st.markdown("---")
 
 col_my, col_opp = st.columns(2, gap="large")
 
-# 실시간 반영을 극대화하기 위해 각 입력창에 key를 고정하고 
-# 값이 바뀌는 즉시 스크립트가 재실행되도록 구성했습니다.
-
 with col_my:
     st.subheader("👤 나의 스펙")
-    hp = st.number_input("나의 최대 체력(HP)", min_value=0, value=1000000, step=10000, key="hp")
-    mp = st.number_input("나의 최대 마력(MP)", min_value=0, value=1000000, step=10000, key="mp")
-    my_ignore = st.number_input("나의 직타저항무시 (%)", min_value=0.0, value=0.0, step=0.1, key="ign") / 100
-    my_atk = st.number_input("나의 대인공격 (%)", min_value=0.0, value=0.0, step=0.1, key="atk") / 100
+    # key를 부여하고 text_input을 사용하면 엔터 없이도 값이 즉시 세션에 기록됩니다.
+    hp_raw = st.text_input("나의 최대 체력(HP)", value="1000000", key="hp_t")
+    mp_raw = st.text_input("나의 최대 마력(MP)", value="1000000", key="mp_t")
+    ign_raw = st.text_input("나의 직타저항무시 (%)", value="0.0", key="ign_t")
+    atk_raw = st.text_input("나의 대인공격 (%)", value="0.0", key="atk_t")
     
     m_col1, m_col2 = st.columns([1.8, 1.2]) 
     with m_col1:
-        my_crit_rate = st.number_input("나의 마치피해량증가 (%)", min_value=0.0, value=0.0, step=0.1, key="crit") / 100
+        crit_raw = st.text_input("나의 마치피해량증가 (%)", value="0.0", key="crit_t")
     with m_col2:
         st.markdown('<div class="checkbox-container"></div>', unsafe_allow_html=True)
         is_phoenix = st.checkbox("불멸주작 시동", value=False, key="phx")
 
 with col_opp:
     st.subheader("🎯 상대방 스펙")
-    opp_res = st.number_input("상대방 직타저항 (%)", min_value=0.0, value=0.0, step=0.1, key="res") / 100
-    opp_def = st.number_input("상대방 대인방어 (%)", min_value=0.0, value=0.0, step=0.1, key="dfn") / 100
+    res_raw = st.text_input("상대방 직타저항 (%)", value="0.0", key="res_t")
+    dfn_raw = st.text_input("상대방 대인방어 (%)", value="0.0", key="dfn_t")
+
+# 실시간 텍스트 -> 숫자 변환
+hp = get_num(hp_raw)
+mp = get_num(mp_raw)
+my_ignore = get_num(ign_raw) / 100
+my_atk = get_num(atk_raw) / 100
+my_crit_rate = get_num(crit_raw) / 100
+opp_res = get_num(res_raw) / 100
+opp_def = get_num(dfn_raw) / 100
 
 st.markdown("---") 
 
@@ -87,9 +98,3 @@ st.subheader("🔥 최종 계산 대미지")
 st.error(f"### {readable_dmg}") 
 
 st.caption("제작자: 빅딕@연  |  최종수정날짜: 2026.03.27")
-
-with st.expander("계산 상세 정보 확인"):
-    st.write(f"- 기본 위력 계수: {base_power:,.2f}")
-    st.write(f"- 마치피해 증폭(A): {crit_factor_a:,.4f}")
-    if is_phoenix:
-        st.write(f"- 불멸주작 증폭(B): {1 + (0.6 * crit_factor_a):,.4f}")
