@@ -82,8 +82,8 @@ res_factor = 1 - opp_res + my_ignore
 attack_factor = 1 + my_atk
 defense_factor = 1 - opp_def
 
-# 치명타 계수 및 주작 추가타 제거 반영 최종 대미지 계산
-final_damage = base_power * res_factor * attack_factor * defense_factor
+# 최종 대미지 계산 (인게임 비교 결과에 맞춰 최종 나누기 2 반영)
+final_damage = (base_power * res_factor * attack_factor * defense_factor) / 2
 
 # --- [4. 결과 출력 섹션] ---
 st.subheader("🔥 최종 계산 대미지")
